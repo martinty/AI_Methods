@@ -1,8 +1,10 @@
 #include "calculation.hpp"
 
 int main() {
+#ifdef __linux__
+#else
     system("chcp 65001 > nul");
-
+#endif
     Matrix2d observationModel, transitionModel;
     Vector2d rainProb;
     observationModel << 0.9, 0.0, 0.0, 0.2;
