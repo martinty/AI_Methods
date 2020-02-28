@@ -1,4 +1,5 @@
 from typing import List, Any, NamedTuple, Dict, Tuple
+import matplotlib.pyplot as plt
 
 # Key = State, Value = Reward
 reward_matrix: Dict[int, float] = {0: -0.1, 1: -0.1, 2: -0.1, 3: -0.1, 4: -0.1, 5: -1.0, 6: -0.1, 7: -1.0, 8: -0.1,
@@ -138,12 +139,27 @@ def extract_policy(value_table: Any) -> Any:
     # TODO: Implement the method.
 
 
+def test_matplot():
+    data = {'apples': 10, 'oranges': 15, 'lemons': 5, 'limes': 20}
+    names = list(data.keys())
+    values = list(data.values())
+
+    fig, axs = plt.subplots(1, 3, figsize=(9, 3), sharey=True)
+    axs[0].bar(names, values)
+    axs[1].scatter(names, values)
+    axs[2].plot(names, values)
+    fig.suptitle('Categorical Plotting')
+    plt.show()
+
 
 def main() -> None:
     """
     Run the script.
     :return: Nothing.
     """
+    msg = "Hello world!"
+    print(msg)
+    test_matplot()
     value_table = value_iteration()
     optimal_policy = extract_policy(value_table)
 
