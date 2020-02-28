@@ -1,5 +1,7 @@
 from typing import List, Any, NamedTuple, Dict, Tuple
 import matplotlib.pyplot as plt
+import numpy as np
+import math
 
 # Key = State, Value = Reward
 reward_matrix: Dict[int, float] = {0: -0.1, 1: -0.1, 2: -0.1, 3: -0.1, 4: -0.1, 5: -1.0, 6: -0.1, 7: -1.0, 8: -0.1,
@@ -77,8 +79,7 @@ def get_transition_probability(state: int, action: str, outcome_state: int) -> f
     assert action in moves.keys(), "Action must be either: left, down, right, or up."
     assert isinstance(outcome_state, int) and 0 <= outcome_state < 16, "States must be an integer between 0 - 15."
 
-    return {next_state: trans_prob for trans_prob, next_state in transition_matrix[state][moves[action]]}[
-        outcome_state]
+    return {next_state: trans_prob for trans_prob, next_state in transition_matrix[state][moves[action]]}[outcome_state]
 
 
 def get_reward(state: int) -> float:
@@ -128,6 +129,23 @@ def value_iteration() -> Any:
     :return: The converged utility values of all states.
     """
     # TODO: Implement the method.
+    U = [0] * constants.number_states
+    U_mark = [0] * constants.number_states
+    delta = math.inf
+    while delta > constants.epsilon*(1-constants.gamma)/constants.gamma:
+        U = list(U_mark)
+        delta = 0
+        for s in range(constants.number_states):
+            action_value = 0
+            for a in moves:
+                value = 0
+                outcome_states = get_outcome_states(s, a)
+                for s_mark in outcome_states:
+                    value += get_transition_probability(s, a, s_mark) * U[s_mark]
+                action_value = max(action_value, value)
+            U_mark[s] = get_reward(s) + constants.gamma*action_value
+            delta = max(delta, abs(U_mark[s] - U[s]))
+    return U
 
 
 def extract_policy(value_table: Any) -> Any:
@@ -139,29 +157,35 @@ def extract_policy(value_table: Any) -> Any:
     # TODO: Implement the method.
 
 
-def test_matplot():
-    data = {'apples': 10, 'oranges': 15, 'lemons': 5, 'limes': 20}
-    names = list(data.keys())
-    values = list(data.values())
+def plot_value_table(data: Any) -> Any:
+    fig = plt.figure(dpi=80)
+    ax = fig.add_subplot(1, 1, 1)
+    table_data = [
+        ["0"],
+        ["1"],
+        ["2"],
+        ["3"]
+    ]
 
-    fig, axs = plt.subplots(1, 3, figsize=(9, 3), sharey=True)
-    axs[0].bar(names, values)
-    axs[1].scatter(names, values)
-    axs[2].plot(names, values)
-    fig.suptitle('Categorical Plotting')
+    table_data[0] += data[0:3]
+    table_data[1] += data[4:7]
+    table_data[2] += data[8:11]
+    table_data[3] += data[12:15]
+
+    test = [1, 2, 3]
+    table = ax.table(cellText=table_data, loc='center')
+    table.set_fontsize(14)
+    table.scale(1, 4)
+    ax.axis('off')
     plt.show()
 
 
 def main() -> None:
-    """
-    Run the script.
-    :return: Nothing.
-    """
-    msg = "Hello world!"
-    print(msg)
-    test_matplot()
+    print("TDT4171 - Exercise 4")
     value_table = value_iteration()
     optimal_policy = extract_policy(value_table)
+
+    plot_value_table(value_table)
 
 
 if __name__ == '__main__':
