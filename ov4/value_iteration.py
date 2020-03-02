@@ -119,7 +119,7 @@ class Constants(NamedTuple):
 constants: Constants = Constants()
 
 
-def value_iteration() -> Any:
+def value_iteration() -> List[float]:
     """
     Implement the value iteration algorithm described in Figure 17.4 in the book.
 
@@ -148,44 +148,80 @@ def value_iteration() -> Any:
     return U
 
 
-def extract_policy(value_table: Any) -> Any:
+def extract_policy(value_table: List[float]) -> Dict[int, str]:
     """
     Extract policy based on the given value_table.
     :param value_table: Some data structure containing the converged utility values.
     :return: The extracted policy.
     """
     # TODO: Implement the method.
+    start = 0
+    goal = 15
+    policy = {}
+    policy_states = [start]
+    while policy_states[-1] != goal:
+        s = policy_states[-1]
+        best_action = ""
+        best_state = -1
+        best_utility = -math.inf
+        for a in moves:
+            outcome_states = get_outcome_states(s, a)
+            for s_mark in outcome_states:
+                prob = get_transition_probability(s, a, s_mark)
+                value = prob * value_table[s_mark]
+                if value > best_utility:
+                    best_action = a
+                    best_state = s_mark
+                    best_utility = value
+        policy[policy_states[-1]] = "State: " + str(policy_states[-1]) + "\nAction: " + best_action
+        policy_states.append(best_state)
+    policy[start] = "Home\n" + policy[start]
+    policy[goal] = "Office\n" + "State: " + str(goal)
+    return policy
 
 
-def plot_value_table(data: Any) -> Any:
-    fig = plt.figure(dpi=80)
-    ax = fig.add_subplot(1, 1, 1)
-    table_data = [
-        ["0"],
-        ["1"],
-        ["2"],
-        ["3"]
-    ]
-
-    table_data[0] += data[0:3]
-    table_data[1] += data[4:7]
-    table_data[2] += data[8:11]
-    table_data[3] += data[12:15]
-
-    test = [1, 2, 3]
-    table = ax.table(cellText=table_data, loc='center')
-    table.set_fontsize(14)
-    table.scale(1, 4)
-    ax.axis('off')
+def plot_value_table(value_table: List[float]) -> None:
+    N = 4
+    matrix = make_matrix(value_table, N)
+    plt.imshow(matrix, aspect='auto', cmap="bwr")
+    for (y, x), value in np.ndenumerate(matrix):
+        state = str(y*N + x)
+        string = "State: " + state + "\nUtility: " + "%.3f" % value
+        plt.text(x, y, string, va='center', ha='center')
+    plt.axis('off')
+    plt.savefig('utility_values.pdf')
     plt.show()
+
+
+def plot_optimal_policy(optimal_policy: Dict[int, str], value_table: List[float]) -> None:
+    N = 4
+    matrix = make_matrix(value_table, N)
+    plt.imshow(matrix, aspect='auto', cmap="bwr")
+    for key in optimal_policy:
+        x = key % N
+        y = math.floor(key / N)
+        string = optimal_policy[key]
+        plt.text(x, y, string, va='center', ha='center', color='black')
+    plt.axis('off')
+    plt.savefig('optimal_policy.pdf')
+    plt.show()
+
+
+def make_matrix(data: List[float], N: int) -> Any:
+    matrix = np.zeros((N, N))
+    for i in range(N):
+        matrix[i] = data[i*N:i*N+N]
+    return matrix
 
 
 def main() -> None:
     print("TDT4171 - Exercise 4")
-    value_table = value_iteration()
-    optimal_policy = extract_policy(value_table)
 
+    value_table = value_iteration()
     plot_value_table(value_table)
+
+    optimal_policy = extract_policy(value_table)
+    plot_optimal_policy(optimal_policy, value_table)
 
 
 if __name__ == '__main__':
