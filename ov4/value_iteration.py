@@ -50,8 +50,10 @@ transition_matrix: Dict[int, Dict[int, List[Tuple[float, int]]]] = \
 
 moves: Dict[str, int] = {"left": 0, "down": 1, "right": 2, "up": 3}
 
+moves_invert: Dict[int, str] = {-2: "office", -1: "none", 0: "left", 1: "down", 2: "right", 3: "up"}
 
 # ------------------------------- Nothing you need or need to do above this line ---------------------------------------
+
 
 def get_outcome_states(state: int, action: str) -> List[int]:
     """
@@ -113,6 +115,8 @@ class Constants(NamedTuple):
     number_actions: int = 4
     epsilon: float = 1e-20
     gamma: float = 0.9
+    size: int = 4
+    goal: int = 15
 
 
 # This variable contains all constants you will need
@@ -132,11 +136,11 @@ def value_iteration() -> List[float]:
     U = [0] * constants.number_states
     U_mark = [0] * constants.number_states
     delta = math.inf
-    while delta > constants.epsilon*(1-constants.gamma)/constants.gamma:
+    while delta >= constants.epsilon*(1-constants.gamma)/constants.gamma:
         U = list(U_mark)
         delta = 0
         for s in range(constants.number_states):
-            action_value = 0
+            action_value = -math.inf
             for a in moves:
                 value = 0
                 outcome_states = get_outcome_states(s, a)
@@ -148,66 +152,58 @@ def value_iteration() -> List[float]:
     return U
 
 
-def extract_policy(value_table: List[float]) -> Dict[int, str]:
+def extract_policy(value_table: List[float]) -> List[int]:
     """
     Extract policy based on the given value_table.
     :param value_table: Some data structure containing the converged utility values.
     :return: The extracted policy.
     """
     # TODO: Implement the method.
-    start = 0
-    goal = 15
-    policy = {}
-    policy_states = [start]
-    while policy_states[-1] != goal:
-        s = policy_states[-1]
-        best_action = ""
-        best_state = -1
+    policy = []
+    for s in range(constants.number_states):
+        best_action = -1
         best_utility = -math.inf
         for a in moves:
+            value = 0
             outcome_states = get_outcome_states(s, a)
+            if len(outcome_states) == 1:
+                break
             for s_mark in outcome_states:
                 prob = get_transition_probability(s, a, s_mark)
-                value = prob * value_table[s_mark]
-                if value > best_utility:
-                    best_action = a
-                    best_state = s_mark
-                    best_utility = value
-        policy[policy_states[-1]] = "State: " + str(policy_states[-1]) + "\nAction: " + best_action
-        policy_states.append(best_state)
-    policy[start] = "Home\n" + policy[start]
-    policy[goal] = "Office\n" + "State: " + str(goal)
+                value += prob * value_table[s_mark]
+            if value > best_utility:
+                best_action = moves[a]
+                best_utility = value
+        policy.append(best_action)
+    policy[constants.goal] = -2
     return policy
 
 
 def plot_value_table(value_table: List[float]) -> None:
-    N = 4
+    N = constants.size
     matrix = make_matrix(value_table, N)
-    plt.imshow(matrix, aspect='auto', cmap="bwr")
     for (y, x), value in np.ndenumerate(matrix):
-        state = str(y*N + x)
-        string = "State: " + state + "\nUtility: " + "%.3f" % value
+        string = "State: " + str(y*N + x) + "\nUtility: " + "%.3f" % value
         plt.text(x, y, string, va='center', ha='center')
+    plt.imshow(matrix, aspect='auto', cmap="bwr")
     plt.axis('off')
     plt.savefig('utility_values.pdf')
     plt.show()
 
 
-def plot_optimal_policy(optimal_policy: Dict[int, str], value_table: List[float]) -> None:
-    N = 4
-    matrix = make_matrix(value_table, N)
-    plt.imshow(matrix, aspect='auto', cmap="bwr")
-    for key in optimal_policy:
-        x = key % N
-        y = math.floor(key / N)
-        string = optimal_policy[key]
-        plt.text(x, y, string, va='center', ha='center', color='black')
+def plot_optimal_policy(optimal_policy: List[int]) -> None:
+    N = constants.size
+    matrix = make_matrix(optimal_policy, N)
+    for (y, x), value in np.ndenumerate(matrix):
+        string = "State: " + str(y*N + x) + "\nAction: " + moves_invert[optimal_policy[y*N + x]]
+        plt.text(x, y, string, va='center', ha='center')
+    plt.imshow(matrix, aspect='auto')
     plt.axis('off')
     plt.savefig('optimal_policy.pdf')
     plt.show()
 
 
-def make_matrix(data: List[float], N: int) -> Any:
+def make_matrix(data, N):
     matrix = np.zeros((N, N))
     for i in range(N):
         matrix[i] = data[i*N:i*N+N]
@@ -221,7 +217,7 @@ def main() -> None:
     plot_value_table(value_table)
 
     optimal_policy = extract_policy(value_table)
-    plot_optimal_policy(optimal_policy, value_table)
+    plot_optimal_policy(optimal_policy)
 
 
 if __name__ == '__main__':
