@@ -47,34 +47,38 @@ def usingKeras() -> None:
     vocab_size = data["vocab_size"]
     max_length = data["max_length"]
 
-    LENGTH = 16
+    LENGTH = max_length
     x_train_prep = keras.preprocessing.sequence.pad_sequences(x_train, maxlen=LENGTH)
     x_test_prep = keras.preprocessing.sequence.pad_sequences(x_test, maxlen=LENGTH)
     y_train_prep = keras.utils.to_categorical(y_train, num_classes=2)
     y_test_prep = keras.utils.to_categorical(y_test, num_classes=2)
 
-    DIM = 16
+    DIM = 128
     model = keras.Sequential()
-    model.add(keras.layers.Embedding(input_dim=vocab_size, output_dim=DIM))
+    model.add(keras.layers.Embedding(input_dim=vocab_size, output_dim=DIM, input_length=LENGTH))
     model.add(keras.layers.LSTM(activation='sigmoid', units=DIM))
     model.add(keras.layers.Dense(units=2))
+
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+    print(model.summary())
+
     model.fit(x=x_train_prep, y=y_train_prep, batch_size=DIM, epochs=3, verbose=1, use_multiprocessing=True)
 
-    score = model.evaluate(x=x_test_prep, y=y_test_prep, verbose=1, use_multiprocessing=True)
+    loss, accuracy = model.evaluate(x=x_test_prep, y=y_test_prep, verbose=1, use_multiprocessing=True)
 
     print("Deep learning - keras (TensorFlow)")
     print("Evaluation score:")
-    print("\tLTSM loss:    ", score[0])
-    print("\tLTSM accuracy:", score[1])
+    print("\tLTSM loss:    ", loss)
+    print("\tLTSM accuracy:", accuracy)
     print("End of keras!")
 
 
 def main() -> None:
     print("TDT4171 - Exercise 5")
 
-    # usingSklearn()
-    # usingKeras()
+    usingSklearn()
+    usingKeras()
 
 
 if __name__ == '__main__':
