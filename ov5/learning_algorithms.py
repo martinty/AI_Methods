@@ -41,7 +41,7 @@ def usingSklearn() -> None:
 
     # Decision Tree classifier
     start_time_DT = time.time()
-    classifier_DT = DecisionTreeClassifier(max_depth=10)
+    classifier_DT = DecisionTreeClassifier(max_depth=8)
     classifier_DT.fit(X=x_train_vec, y=y_train)
     y_pred_DT = classifier_DT.predict(x_test_vec)
     accuracy_DT = accuracy_score(y_test, y_pred_DT)
@@ -66,32 +66,33 @@ def usingKeras() -> None:
     vocab_size = data["vocab_size"]
     max_length = data["max_length"]
 
-    LENGTH = max_length
-    x_train_pad = keras.preprocessing.sequence.pad_sequences(x_train, maxlen=LENGTH)
-    x_test_pad = keras.preprocessing.sequence.pad_sequences(x_test, maxlen=LENGTH)
-    y_train_binary = keras.utils.to_categorical(y_train)
-    y_test_binary = keras.utils.to_categorical(y_test)
+    x_train_pad = keras.preprocessing.sequence.pad_sequences(x_train, maxlen=512)
+    x_test_pad = keras.preprocessing.sequence.pad_sequences(x_test, maxlen=512)
+    y_train_binary = keras.utils.to_categorical(y_train, num_classes=2)
+    y_test_binary = keras.utils.to_categorical(y_test, num_classes=2)
 
-    DIM = 128
-    load = False
+    OUTPUT_DIM = 16
+    load = True
     save = True
 
     model = keras.Sequential()
     if load:
-        model = keras.models.load_model('my_model.h5')
+        model = keras.models.load_model('my_model_92.h5')
     else:
-        model.add(keras.layers.Embedding(input_dim=vocab_size, output_dim=DIM, input_length=LENGTH))
-        model.add(keras.layers.LSTM(activation='sigmoid', units=DIM))
+        model.add(keras.layers.Embedding(input_dim=vocab_size, output_dim=OUTPUT_DIM))
+        model.add(keras.layers.LSTM(units=OUTPUT_DIM))
         model.add(keras.layers.Dense(units=2))
         model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-        model.fit(x=x_train_pad, y=y_train_binary, batch_size=DIM, epochs=6, verbose=1, use_multiprocessing=True)
+        model.fit(x=x_train_pad, y=y_train_binary, epochs=3, verbose=1)
         if save:
             model.save('my_model.h5')
+
+    # prediction = model.predict(x_test_pad,  verbose=1)
 
     print("-" * 100, "\nDeep learning - keras (TensorFlow)")
     verify_reviews(y_test)
     print("Evaluation score:")
-    loss, accuracy = model.evaluate(x=x_test_pad, y=y_test_binary, verbose=1, use_multiprocessing=True)
+    loss, accuracy = model.evaluate(x=x_test_pad, y=y_test_binary, verbose=1)
     print("\tLTSM loss:    ", loss)
     print("\tLTSM accuracy:", accuracy, "\n" + "-" * 100)
     print(model.summary(), "\n" + "-" * 100)
@@ -100,7 +101,7 @@ def usingKeras() -> None:
 def main() -> None:
     print("TDT4171 - Exercise 5")
 
-    usingSklearn()
+    # usingSklearn()
     usingKeras()
 
 
