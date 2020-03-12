@@ -72,18 +72,18 @@ def usingKeras() -> None:
     y_test_binary = keras.utils.to_categorical(y_test, num_classes=2)
 
     OUTPUT_DIM = 16
-    load = True
+    load = False
     save = True
 
     model = keras.Sequential()
     if load:
-        model = keras.models.load_model('my_model_92.h5')
+        model = keras.models.load_model('my_model.h5')
     else:
         model.add(keras.layers.Embedding(input_dim=vocab_size, output_dim=OUTPUT_DIM))
         model.add(keras.layers.LSTM(units=OUTPUT_DIM))
         model.add(keras.layers.Dense(units=2))
         model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-        model.fit(x=x_train_pad, y=y_train_binary, epochs=3, verbose=1)
+        model.fit(x=x_train_pad, y=y_train_binary, epochs=10, verbose=1)
         if save:
             model.save('my_model.h5')
 
