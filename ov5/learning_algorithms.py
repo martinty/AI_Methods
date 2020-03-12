@@ -33,7 +33,7 @@ def usingSklearn() -> None:
 
     #  Naive Bayes classifier
     start_time_NB = time.time()
-    classifier_NB = BernoulliNB(alpha=1.0, binarize=None, fit_prior=True)
+    classifier_NB = BernoulliNB(alpha=1.0, binarize=None)
     classifier_NB.fit(X=x_train_vec, y=y_train)
     y_pred_NB = classifier_NB.predict(x_test_vec)
     accuracy_NB = accuracy_score(y_test, y_pred_NB)
@@ -68,10 +68,9 @@ def usingKeras() -> None:
 
     x_train_pad = keras.preprocessing.sequence.pad_sequences(x_train, maxlen=512)
     x_test_pad = keras.preprocessing.sequence.pad_sequences(x_test, maxlen=512)
-    y_train_binary = keras.utils.to_categorical(y_train, num_classes=2)
-    y_test_binary = keras.utils.to_categorical(y_test, num_classes=2)
+    y_train_binary = keras.utils.to_categorical(y_train)
+    y_test_binary = keras.utils.to_categorical(y_test)
 
-    OUTPUT_DIM = 16
     load = False
     save = True
 
@@ -79,10 +78,10 @@ def usingKeras() -> None:
     if load:
         model = keras.models.load_model('my_model.h5')
     else:
-        model.add(keras.layers.Embedding(input_dim=vocab_size, output_dim=OUTPUT_DIM))
-        model.add(keras.layers.LSTM(units=OUTPUT_DIM))
+        model.add(keras.layers.Embedding(input_dim=vocab_size, output_dim=2))
+        model.add(keras.layers.LSTM(units=2))
         model.add(keras.layers.Dense(units=2))
-        model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+        model.compile(optimizer='Adam', loss='mean_squared_error', metrics=['accuracy'])
         model.fit(x=x_train_pad, y=y_train_binary, epochs=10, verbose=1)
         if save:
             model.save('my_model.h5')
