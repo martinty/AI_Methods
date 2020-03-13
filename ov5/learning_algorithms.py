@@ -29,7 +29,7 @@ def usingSklearn() -> None:
     y_train = data['y_train']
     y_test = data['y_test']
 
-    vectorizer = HashingVectorizer(n_features=2**10, binary=True, stop_words='english')
+    vectorizer = HashingVectorizer(n_features=2**14, binary=True, stop_words='english')
     x_train_vec = vectorizer.transform(x_train)
     x_test_vec = vectorizer.transform(x_test)
 
@@ -49,7 +49,7 @@ def usingSklearn() -> None:
     accuracy_DT = accuracy_score(y_test, y_pred_DT)
     elapsed_time_DT = time.time() - start_time_DT
 
-    plot = True
+    plot = False
     if plot:
         skplt.metrics.plot_confusion_matrix(y_test, y_pred_NB, normalize=True,
                                             title="Normalized Confusion Matrix for BernoulliNB")
@@ -57,7 +57,7 @@ def usingSklearn() -> None:
         plt.show()
         skplt.metrics.plot_confusion_matrix(y_test, y_pred_DT, normalize=True,
                                             title="Normalized Confusion Matrix for DecisionTreeClassifier")
-        plt.savefig('confusion_matrix_NB.pdf')
+        plt.savefig('confusion_matrix_DT.pdf')
         plt.show()
 
     print("-" * 100, "\nMachine-learning algorithms - sklearn")
@@ -79,8 +79,8 @@ def usingKeras() -> None:
     vocab_size = data["vocab_size"]
     max_length = data["max_length"]
 
-    x_train_pad = keras.preprocessing.sequence.pad_sequences(x_train, maxlen=512)
-    x_test_pad = keras.preprocessing.sequence.pad_sequences(x_test, maxlen=512)
+    x_train_pad = keras.preprocessing.sequence.pad_sequences(x_train, maxlen=int(max_length * 1/2))
+    x_test_pad = keras.preprocessing.sequence.pad_sequences(x_test, maxlen=int(max_length * 1/2))
     y_train_binary = keras.utils.to_categorical(y_train)
     y_test_binary = keras.utils.to_categorical(y_test)
 
@@ -97,7 +97,7 @@ def usingKeras() -> None:
         model.add(keras.layers.Dense(units=2))
         model.compile(optimizer='Adam', loss='mean_squared_error', metrics=['accuracy'])
         history = model.fit(x=x_train_pad, y=y_train_binary, validation_data=[x_test_pad, y_test_binary],
-                            epochs=10, batch_size=1024, verbose=1)
+                            epochs=10, batch_size=2**6, verbose=1)
         if save:
             model.save('my_model.h5')
         if plot:
@@ -123,7 +123,7 @@ def usingKeras() -> None:
     print("-" * 100, "\nDeep learning - keras (TensorFlow)")
     verify_reviews(y_test)
     print("Evaluation score:")
-    loss, accuracy = model.evaluate(x=x_test_pad, y=y_test_binary, verbose=1, batch_size=1024)
+    loss, accuracy = model.evaluate(x=x_test_pad, y=y_test_binary, verbose=1, batch_size=2**10)
     print("\tLTSM loss:    ", loss)
     print("\tLTSM accuracy:", accuracy, "\n" + "-" * 100)
     print(model.summary(), "\n" + "-" * 100)
@@ -132,8 +132,8 @@ def usingKeras() -> None:
 def main() -> None:
     print("TDT4171 - Exercise 5")
 
-    usingSklearn()
-    # usingKeras()
+    # usingSklearn()
+    usingKeras()
 
 
 if __name__ == '__main__':
