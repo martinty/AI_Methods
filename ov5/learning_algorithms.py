@@ -1,19 +1,17 @@
-import scikitplot as skplt
-import matplotlib.pyplot as plt
-import time
-from sklearn.feature_extraction.text import HashingVectorizer
-from sklearn.metrics import accuracy_score
-from sklearn.naive_bayes import BernoulliNB
-from sklearn.tree import DecisionTreeClassifier
 import pickle
-import warnings
-with warnings.catch_warnings():
-    warnings.filterwarnings("ignore", category=FutureWarning)
-    warnings.filterwarnings("ignore", category=DeprecationWarning)
-    from tensorflow import keras
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.naive_bayes import BernoulliNB
+from sklearn.metrics import accuracy_score
+from sklearn.feature_extraction.text import HashingVectorizer
+import time
+import matplotlib.pyplot as plt
+import scikitplot as skplt
+import tensorflow as tf
+from tensorflow import keras
 
 
-def verify_reviews(y):
+def verify_reviews(y) -> None:
+    # Print % of good and bad reviews
     good = 0
     for i in y:
         good += i
@@ -23,17 +21,19 @@ def verify_reviews(y):
 
 
 def usingSklearn() -> None:
+    # Load data from data set
     data = pickle.load(open("sklearn-data.pickle", "rb"))
     x_train = data['x_train']
     x_test = data['x_test']
     y_train = data['y_train']
     y_test = data['y_test']
 
+    # Adjust data
     vectorizer = HashingVectorizer(n_features=2**14, binary=True, stop_words='english')
     x_train_vec = vectorizer.transform(x_train)
     x_test_vec = vectorizer.transform(x_test)
 
-    #  Naive Bayes classifier
+    # Naive Bayes classifier
     start_time_NB = time.time()
     classifier_NB = BernoulliNB(alpha=1.0, binarize=None)
     classifier_NB.fit(X=x_train_vec, y=y_train)
@@ -51,6 +51,7 @@ def usingSklearn() -> None:
 
     plot = False
     if plot:
+        # Plot Confusion Matrix
         skplt.metrics.plot_confusion_matrix(y_test, y_pred_NB, normalize=True,
                                             title="Normalized Confusion Matrix for BernoulliNB")
         plt.savefig('confusion_matrix_NB.pdf')
@@ -60,6 +61,7 @@ def usingSklearn() -> None:
         plt.savefig('confusion_matrix_DT.pdf')
         plt.show()
 
+    # Result
     print("-" * 100, "\nMachine-learning algorithms - sklearn")
     verify_reviews(y_test)
     print("Accuracy score:")
@@ -71,6 +73,7 @@ def usingSklearn() -> None:
 
 
 def usingKeras() -> None:
+    # Load data from data set
     data = pickle.load(open("keras-data.pickle", "rb"))
     x_train = data['x_train']
     x_test = data['x_test']
@@ -79,15 +82,18 @@ def usingKeras() -> None:
     vocab_size = data["vocab_size"]
     max_length = data["max_length"]
 
+    # Adjust data set
     x_train_pad = keras.preprocessing.sequence.pad_sequences(x_train, maxlen=int(max_length * 1/2))
     x_test_pad = keras.preprocessing.sequence.pad_sequences(x_test, maxlen=int(max_length * 1/2))
     y_train_binary = keras.utils.to_categorical(y_train)
     y_test_binary = keras.utils.to_categorical(y_test)
 
+    # Options (model)
     load = False
     save = True
     plot = True
 
+    # Build and train model
     model = keras.Sequential()
     if load:
         model = keras.models.load_model('my_model.h5')
@@ -97,7 +103,7 @@ def usingKeras() -> None:
         model.add(keras.layers.Dense(units=2))
         model.compile(optimizer='Adam', loss='mean_squared_error', metrics=['accuracy'])
         history = model.fit(x=x_train_pad, y=y_train_binary, validation_data=[x_test_pad, y_test_binary],
-                            epochs=10, batch_size=2**6, verbose=1)
+                            epochs=3, batch_size=2**10, verbose=2)
         if save:
             model.save('my_model.h5')
         if plot:
@@ -120,10 +126,19 @@ def usingKeras() -> None:
             plt.savefig('loss_keras.pdf')
             plt.show()
 
+    if plot:
+        # Plot Confusion Matrix
+        y_pred = model.predict_classes(x=x_test_pad, batch_size=2**10, verbose=2)
+        skplt.metrics.plot_confusion_matrix(y_test, y_pred, normalize=True,
+                                            title="Normalized Confusion Matrix for LSTM")
+        plt.savefig('confusion_matrix_LSTM.pdf')
+        plt.show()
+
+    # Result
     print("-" * 100, "\nDeep learning - keras (TensorFlow)")
     verify_reviews(y_test)
     print("Evaluation score:")
-    loss, accuracy = model.evaluate(x=x_test_pad, y=y_test_binary, verbose=1, batch_size=2**10)
+    loss, accuracy = model.evaluate(x=x_test_pad, y=y_test_binary, batch_size=2**10, verbose=2)
     print("\tLTSM loss:    ", loss)
     print("\tLTSM accuracy:", accuracy, "\n" + "-" * 100)
     print(model.summary(), "\n" + "-" * 100)
