@@ -103,7 +103,7 @@ def usingKeras() -> None:
         model.add(keras.layers.Dense(units=2))
         model.compile(optimizer='Adam', loss='mean_squared_error', metrics=['accuracy'])
         history = model.fit(x=x_train_pad, y=y_train_binary, validation_data=[x_test_pad, y_test_binary],
-                            epochs=3, batch_size=2**10, verbose=2)
+                            epochs=10, batch_size=2**10, verbose=1)
         if save:
             model.save('my_model.h5')
         if plot:
@@ -128,7 +128,7 @@ def usingKeras() -> None:
 
     if plot:
         # Plot Confusion Matrix
-        y_pred = model.predict_classes(x=x_test_pad, batch_size=2**10, verbose=2)
+        y_pred = model.predict_classes(x=x_test_pad, batch_size=2**10, verbose=1)
         skplt.metrics.plot_confusion_matrix(y_test, y_pred, normalize=True,
                                             title="Normalized Confusion Matrix for LSTM")
         plt.savefig('confusion_matrix_LSTM.pdf')
@@ -138,7 +138,7 @@ def usingKeras() -> None:
     print("-" * 100, "\nDeep learning - keras (TensorFlow)")
     verify_reviews(y_test)
     print("Evaluation score:")
-    loss, accuracy = model.evaluate(x=x_test_pad, y=y_test_binary, batch_size=2**10, verbose=2)
+    loss, accuracy = model.evaluate(x=x_test_pad, y=y_test_binary, batch_size=2**10, verbose=1)
     print("\tLTSM loss:    ", loss)
     print("\tLTSM accuracy:", accuracy, "\n" + "-" * 100)
     print(model.summary(), "\n" + "-" * 100)
