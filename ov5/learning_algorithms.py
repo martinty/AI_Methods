@@ -1,3 +1,5 @@
+import scikitplot as skplt
+import matplotlib.pyplot as plt
 import time
 from sklearn.feature_extraction.text import HashingVectorizer
 from sklearn.metrics import accuracy_score
@@ -47,6 +49,17 @@ def usingSklearn() -> None:
     accuracy_DT = accuracy_score(y_test, y_pred_DT)
     elapsed_time_DT = time.time() - start_time_DT
 
+    plot = True
+    if plot:
+        skplt.metrics.plot_confusion_matrix(y_test, y_pred_NB, normalize=True,
+                                            title="Normalized Confusion Matrix for BernoulliNB")
+        plt.savefig('confusion_matrix_NB.pdf')
+        plt.show()
+        skplt.metrics.plot_confusion_matrix(y_test, y_pred_DT, normalize=True,
+                                            title="Normalized Confusion Matrix for DecisionTreeClassifier")
+        plt.savefig('confusion_matrix_NB.pdf')
+        plt.show()
+
     print("-" * 100, "\nMachine-learning algorithms - sklearn")
     verify_reviews(y_test)
     print("Accuracy score:")
@@ -73,6 +86,7 @@ def usingKeras() -> None:
 
     load = False
     save = True
+    plot = True
 
     model = keras.Sequential()
     if load:
@@ -82,16 +96,34 @@ def usingKeras() -> None:
         model.add(keras.layers.LSTM(units=2))
         model.add(keras.layers.Dense(units=2))
         model.compile(optimizer='Adam', loss='mean_squared_error', metrics=['accuracy'])
-        model.fit(x=x_train_pad, y=y_train_binary, epochs=10, verbose=1)
+        history = model.fit(x=x_train_pad, y=y_train_binary, validation_data=[x_test_pad, y_test_binary],
+                            epochs=10, batch_size=1024, verbose=1)
         if save:
             model.save('my_model.h5')
-
-    # prediction = model.predict(x_test_pad,  verbose=1)
+        if plot:
+            # Plot training & validation accuracy values
+            plt.plot(history.history['acc'])
+            plt.plot(history.history['val_acc'])
+            plt.title('Model accuracy')
+            plt.ylabel('Accuracy')
+            plt.xlabel('Epoch')
+            plt.legend(['Train', 'Test'], loc='upper left')
+            plt.savefig('accuracy_keras.pdf')
+            plt.show()
+            # Plot training & validation loss values
+            plt.plot(history.history['loss'])
+            plt.plot(history.history['val_loss'])
+            plt.title('Model loss')
+            plt.ylabel('Loss')
+            plt.xlabel('Epoch')
+            plt.legend(['Train', 'Test'], loc='upper left')
+            plt.savefig('loss_keras.pdf')
+            plt.show()
 
     print("-" * 100, "\nDeep learning - keras (TensorFlow)")
     verify_reviews(y_test)
     print("Evaluation score:")
-    loss, accuracy = model.evaluate(x=x_test_pad, y=y_test_binary, verbose=1)
+    loss, accuracy = model.evaluate(x=x_test_pad, y=y_test_binary, verbose=1, batch_size=1024)
     print("\tLTSM loss:    ", loss)
     print("\tLTSM accuracy:", accuracy, "\n" + "-" * 100)
     print(model.summary(), "\n" + "-" * 100)
@@ -100,8 +132,8 @@ def usingKeras() -> None:
 def main() -> None:
     print("TDT4171 - Exercise 5")
 
-    # usingSklearn()
-    usingKeras()
+    usingSklearn()
+    # usingKeras()
 
 
 if __name__ == '__main__':
