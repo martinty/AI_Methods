@@ -35,7 +35,7 @@ def usingSklearn() -> None:
 
     # Naive Bayes classifier
     start_time_NB = time.time()
-    classifier_NB = BernoulliNB(alpha=1.0, binarize=None)
+    classifier_NB = BernoulliNB()
     classifier_NB.fit(X=x_train_vec, y=y_train)
     y_pred_NB = classifier_NB.predict(x_test_vec)
     accuracy_NB = accuracy_score(y_test, y_pred_NB)
@@ -43,7 +43,7 @@ def usingSklearn() -> None:
 
     # Decision Tree classifier
     start_time_DT = time.time()
-    classifier_DT = DecisionTreeClassifier(max_depth=8)
+    classifier_DT = DecisionTreeClassifier()
     classifier_DT.fit(X=x_train_vec, y=y_train)
     y_pred_DT = classifier_DT.predict(x_test_vec)
     accuracy_DT = accuracy_score(y_test, y_pred_DT)
