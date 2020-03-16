@@ -90,8 +90,8 @@ def usingKeras() -> None:
 
     # Options (model)
     load = False
-    save = True
-    plot = True
+    save = False
+    plot = False
 
     # Build and train model
     model = keras.Sequential()
@@ -103,7 +103,7 @@ def usingKeras() -> None:
         model.add(keras.layers.Dense(units=2))
         model.compile(optimizer='Adam', loss='mean_squared_error', metrics=['accuracy'])
         history = model.fit(x=x_train_pad, y=y_train_binary, validation_data=[x_test_pad, y_test_binary],
-                            epochs=10, batch_size=2**10, verbose=1)
+                            epochs=10, batch_size=64, verbose=1)
         if save:
             model.save('my_model.h5')
         if plot:
@@ -147,7 +147,7 @@ def usingKeras() -> None:
 def main() -> None:
     print("TDT4171 - Exercise 5")
 
-    # usingSklearn()
+    usingSklearn()
     usingKeras()
 
 
