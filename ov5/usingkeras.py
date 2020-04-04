@@ -49,37 +49,37 @@ title = "Normalized confusion matrix for the model"
 
 print("Model fitted")
 y_predicted = model.predict_classes(x=x_test, batch_size=128)
-skplt.metrics.plot_confusion_matrix(y_test, y_predicted, normalize=True, title=title)
+skplt.metrics.plot_confusion_matrix(data['y_test'], y_predicted, normalize=True, title=title)
 
 # print(title)
 # print(disp.confusion_matrix)
-plt.show()
+# plt.show()
 
 
 # THE FOLLOWING CODE IS COPIED FROM THE KERAS.IO WEBPAGE: https://keras.io/visualization/
 
 # Plot training & validation accuracy values
-plt.plot(history.history['acc'])
-plt.plot(history.history['val_acc'])
-plt.title('Model accuracy')
-plt.ylabel('Accuracy')
-plt.xlabel('Epoch')
-plt.legend(['Train', 'Test'], loc='upper left')
-plt.show()
+# plt.plot(history.history['acc'])
+# plt.plot(history.history['val_acc'])
+# plt.title('Model accuracy')
+# plt.ylabel('Accuracy')
+# plt.xlabel('Epoch')
+# plt.legend(['Train', 'Test'], loc='upper left')
+# plt.show()
 
 # Plot training & validation loss values
-plt.plot(history.history['loss'])
-plt.plot(history.history['val_loss'])
-plt.title('Model loss')
-plt.ylabel('Loss')
-plt.xlabel('Epoch')
-plt.legend(['Train', 'Test'], loc='upper left')
-plt.show()
+# plt.plot(history.history['loss'])
+# plt.plot(history.history['val_loss'])
+# plt.title('Model loss')
+# plt.ylabel('Loss')
+# plt.xlabel('Epoch')
+# plt.legend(['Train', 'Test'], loc='upper left')
+# plt.show()
 
 
 # Predict and evaluate
 #pred = model.predict(x=padded_x_test, y=prep_y_test)
-loss, accuracy = model.evaluate(x_test, y_test)
+loss, accuracy = model.evaluate(x_test, y_test, batch_size=128)
 #plot_model(model, to_file='model.png')
-print(model.summary())
+# print(model.summary())
 print('Loss:\t', loss, '\nAccuracy:\t', accuracy)

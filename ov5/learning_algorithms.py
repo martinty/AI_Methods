@@ -129,7 +129,7 @@ def usingKeras() -> None:
     if plot:
         # Plot Confusion Matrix
         y_pred = model.predict_classes(x=x_test_pad, batch_size=2**10, verbose=1)
-        skplt.metrics.plot_confusion_matrix(data['y_test'], y_pred, normalize=True,
+        skplt.metrics.plot_confusion_matrix(y_test, y_pred, normalize=True,
                                             title="Normalized Confusion Matrix for LSTM")
         plt.savefig('confusion_matrix_LSTM.pdf')
         plt.show()
